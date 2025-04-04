@@ -1,0 +1,51 @@
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+file_path = r"C:/Users/Admin/Downloads/archive/gym_members_exercise_tracking.csv"
+
+if not os.path.exists(file_path):
+    raise FileNotFoundError("File not found!")
+
+df = pd.read_csv(file_path)
+
+weight_column = "Weight (kg)"
+fatpercent_column = "Fat_Percentage"
+
+if weight_column not in df.columns or fatpercent_column not in df.columns:
+    raise KeyError(f"Missing required columns: {weight_column} or {fatpercent_column}")
+
+df = df[[weight_column, fatpercent_column]].dropna().sort_values(by=fatpercent_column)
+
+
+if df.empty:
+    raise ValueError("No valid data found!")
+
+plt.figure(figsize=(12, 6))
+
+
+def categorize_weight(w):
+    if w < 60:
+        return "Below 60 kg"
+    elif 60 <= w <= 100:
+        return "60-100 kg"
+    else:
+        return "Above 100 kg"
+
+df["Weight Category"] = df[weight_column].apply(categorize_weight)
+
+
+sns.kdeplot(x=df[weight_column], color='Blue', fill=True, alpha=0.5, clip=(0, 60))  # Below 60 kg (Blue)
+sns.kdeplot(x=df[weight_column], color='Pink', fill=True, alpha=0.5, clip=(60, 100))  # 60-100 kg (Green)
+sns.kdeplot(x=df[weight_column], color='Purple', fill=True, alpha=0.5, clip=(100, 200))  # Above 100 kg (Orange)
+
+
+
+plt.xlabel("Weight (kg)", fontsize=14)
+plt.ylabel("Fat Percentage (%)", fontsize=14)
+plt.title("Relationship Between Weight and Fat Percentage", fontsize=16)
+plt.grid(True, linestyle="--", alpha=0.5)
+
+plt.show()
